@@ -1,13 +1,42 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 
-	scripts "pokeproject/scripts"
+	"pokeproject/api"
+	"pokeproject/scripts"
+
+	"cloud.google.com/go/firestore"
+	"github.com/joho/godotenv"
+	"google.golang.org/api/option"
 )
+
+var firestoreClient *firestore.Client
+
+func init() {
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+	}
+
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	if projectID == "" {
+		log.Fatal("GOOGLE_CLOUD_PROJECT environment variable is not set")
+	}
+
+	// Initialize Firestore
+	ctx := context.Background()
+	opt := option.WithCredentialsFile("service-account.json")
+	client, err := firestore.NewClient(ctx, projectID, opt)
+	if err != nil {
+		log.Fatalf("Error initializing Firestore client: %v", err)
+	}
+	firestoreClient = client
+}
 
 func main() {
 	// Define command line flags
@@ -33,7 +62,21 @@ func main() {
 
 func startServer() {
 	// Define routes
-	http.HandleFunc("/pokemon", getPokemon)
+	http.HandleFunc("/pokemon", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			api.GetPokemonList(w, r, firestoreClient)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/pokemon/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			api.GetPokemonByName(w, r, firestoreClient)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	// Start server
 	port := os.Getenv("PORT")
@@ -45,10 +88,4 @@ func startServer() {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func getPokemon(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement Pokemon retrieval from Firestore
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"message": "Not implemented yet"}`))
 } 

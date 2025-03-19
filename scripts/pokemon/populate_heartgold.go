@@ -88,6 +88,24 @@ func PopulateHeartgold() {
 		log.Printf("Warning: Could not verify database existence: %v", err)
 	}
 
+	// Clean the collection before populating
+	log.Println("Cleaning Pokemon collection...")
+	iter := client.Collection("heartgold-pokemon").Documents(ctx)
+	defer iter.Stop()
+
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			break
+		}
+		_, err = doc.Ref.Delete(ctx)
+		if err != nil {
+			log.Printf("Error deleting document %s: %v", doc.Ref.ID, err)
+			continue
+		}
+	}
+	log.Println("Collection cleaned successfully")
+
 	// Create a test document to ensure database is working
 	testDoc := map[string]interface{}{
 		"test": true,
@@ -136,14 +154,14 @@ func PopulateHeartgold() {
 		}
 
 		// Parse the JSON into a generic map to store all fields
-		var pokemonData map[string]interface{}
-		if err := json.Unmarshal(body, &pokemonData); err != nil {
+		var pokemon Pokemon
+		if err := json.Unmarshal(body, &pokemon); err != nil {
 			log.Printf("Error decoding JSON for %s: %v", entry.PokemonSpecies.Name, err)
 			continue
 		}
 
 		// Store the complete data in Firestore
-		_, err = client.Collection("heartgold-pokemon").Doc(entry.PokemonSpecies.Name).Set(ctx, pokemonData)
+		_, err = client.Collection("heartgold-pokemon").Doc(entry.PokemonSpecies.Name).Set(ctx, pokemon)
 		if err != nil {
 			log.Printf("Error storing %s in Firestore: %v", entry.PokemonSpecies.Name, err)
 			continue
