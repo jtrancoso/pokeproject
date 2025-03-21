@@ -14,6 +14,7 @@ import (
 type PokemonListItem struct {
 	ID            int    `json:"id"`
 	Name          string `json:"name"`
+	RegionalID    int    `json:"regional_id"`
 	Types         []struct {
 		Slot int `json:"slot"`
 		Type struct {
