@@ -1,0 +1,86 @@
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.app-header h1 {
+  font-size: 24px;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.app-header .subtitle {
+  font-size: 14px;
+  color: #888;
+}
+
+.app-search {
+  margin-bottom: 16px;
+}
+
+/* Default 3-column layout: results | center | team */
+.app-body {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
+/* 2-column layout when a slot is selected: detail+moves (wide) | team */
+.app-body--detail {
+  grid-template-columns: 2fr 1fr;
+}
+
+.app-results {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.app-center {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.app-center-wide {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.app-team {
+  /* right column */
+}
+
+.app-analysis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.placeholder {
+  text-align: center;
+  padding: 40px 20px;
+  color: #aaa;
+  font-size: 14px;
+  background: #fff;
+  border-radius: 10px;
+  border: 2px dashed #ddd;
+}
+
+@media (max-width: 900px) {
+  .app-body,
+  .app-body--detail {
+    grid-template-columns: 1fr;
+  }
+  .app-analysis {
+    grid-template-columns: 1fr;
+  }
+}

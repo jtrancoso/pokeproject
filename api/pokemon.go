@@ -1,21 +1,17 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
-
-	"cloud.google.com/go/firestore"
 )
 
 // PokemonListItem represents a Pokemon in the list view
 type PokemonListItem struct {
-	ID            int    `json:"id"`
-	Name          string `json:"name"`
-	RegionalID    int    `json:"regional_id"`
-	Types         []struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	RegionalID int    `json:"regional_id"`
+	Types      []struct {
 		Slot int `json:"slot"`
 		Type struct {
 			Name string `json:"name"`
@@ -26,105 +22,66 @@ type PokemonListItem struct {
 	} `json:"sprites"`
 }
 
-// PokemonDetail represents a Pokemon in the detail view
-type PokemonDetail struct {
-	ID             int    `json:"id"`
-	Name           string `json:"name"`
-	BaseExperience int    `json:"base_experience"`
-	Height         int    `json:"height"`
-	Weight         int    `json:"weight"`
-	Types          []struct {
-		Slot int `json:"slot"`
-		Type struct {
-			Name string `json:"name"`
-		} `json:"type"`
-	} `json:"types"`
-	Abilities []struct {
-		Ability struct {
-			Name string `json:"name"`
-		} `json:"ability"`
-		IsHidden bool `json:"is_hidden"`
-	} `json:"abilities"`
-	Stats []struct {
-		BaseStat int `json:"base_stat"`
-		Stat     struct {
-			Name string `json:"name"`
-		} `json:"stat"`
-	} `json:"stats"`
-	Sprites struct {
-		FrontDefault string `json:"front_default"`
-		BackDefault  string `json:"back_default"`
-	} `json:"sprites"`
-}
-
-// GetPokemonList returns all Pokemon from Firestore
-func GetPokemonList(w http.ResponseWriter, r *http.Request, client *firestore.Client) {
-	ctx := context.Background()
-	
-	// Get all documents from the collection
-	iter := client.Collection("heartgold-pokemon").Documents(ctx)
-	defer iter.Stop()
-
-	var pokemonList []PokemonListItem
-	for {
-		doc, err := iter.Next()
-		if err != nil {
-			break
-		}
-
-		var pokemon PokemonListItem
-		if err := doc.DataTo(&pokemon); err != nil {
-			http.Error(w, fmt.Sprintf("Error parsing Pokemon data: %v", err), http.StatusInternalServerError)
-			return
-		}
-		pokemonList = append(pokemonList, pokemon)
+// GetPokemonListCached returns all Pokemon from the in-memory cache
+func GetPokemonListCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
+	var list []SearchMatchItem
+	for _, data := range cache.PokemonRaw {
+		list = append(list, buildSearchMatchItem(data))
 	}
-
+	if list == nil {
+		list = []SearchMatchItem{}
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(pokemonList)
+	json.NewEncoder(w).Encode(list)
 }
 
-// normalizePokemonName prepares a Pokemon name for consistent lookup
-func normalizePokemonName(name string) string {
-	// Convert to lowercase
-	return strings.ToLower(name)
-}
-
-// GetPokemonByName returns a specific Pokemon by name (case-insensitive)
-func GetPokemonByName(w http.ResponseWriter, r *http.Request, client *firestore.Client) {
-	ctx := context.Background()
-	
-	// Get and normalize name from URL
-	name := normalizePokemonName(r.URL.Path[len("/pokemon/"):])
-
-	// Query Firestore for the Pokemon
-	iter := client.Collection("heartgold-pokemon").Documents(ctx)
-	defer iter.Stop()
-
-	var pokemon PokemonDetail
-	found := false
-
-	for {
-		doc, err := iter.Next()
-		if err != nil {
-			break
-		}
-
-		if err := doc.DataTo(&pokemon); err != nil {
-			continue
-		}
-
-		if pokemon.Name == name {
-			found = true
-			break
-		}
+// ExtractPokemonName extracts the pokemon name from the URL path
+func ExtractPokemonName(path string) string {
+	if strings.HasPrefix(path, "/api/pokemon/") {
+		return strings.TrimPrefix(path, "/api/pokemon/")
 	}
+	return strings.TrimPrefix(path, "/pokemon/")
+}
 
-	if !found {
-		http.Error(w, "Pokemon not found", http.StatusNotFound)
+// GetPokemonByNameCached returns a specific Pokemon by name from cache
+func GetPokemonByNameCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
+	name := strings.ToLower(ExtractPokemonName(r.URL.Path))
+
+	if name == "" {
+		http.Error(w, `{"error": "Pokemon name is required"}`, http.StatusBadRequest)
 		return
 	}
 
+	for _, data := range cache.PokemonRaw {
+		if strings.ToLower(getStringField(data, "name")) == name {
+			// Build a detailed response from raw data
+			detail := buildPokemonDetail(data)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(detail)
+			return
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(pokemon)
-} 
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(map[string]string{"error": "Pokemon not found: " + name})
+}
+
+// buildPokemonDetail builds a detailed Pokemon response from raw Firestore data
+func buildPokemonDetail(data map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	// Copy basic fields
+	result["id"] = data["id"]
+	result["name"] = data["name"]
+	result["regional_id"] = data["regional_id"]
+	result["base_experience"] = data["base_experience"]
+	result["height"] = data["height"]
+	result["weight"] = data["weight"]
+	result["types"] = data["types"]
+	result["abilities"] = data["abilities"]
+	result["stats"] = data["stats"]
+	result["sprites"] = data["sprites"]
+
+	return result
+}

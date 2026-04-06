@@ -1,52 +1,41 @@
-# Pokémon HeartGold Data Collector
+# MochiPC — Pokémon Team Builder
 
-This Go script fetches Pokémon data from the PokeAPI and stores information about Pokémon that appear in Pokémon HeartGold in a Firestore database.
+[mochipc.com](https://mochipc.com)
 
-## Prerequisites
+Herramienta web para planificar equipos Pokémon de HeartGold y SoulSilver.
 
-- Go 1.21 or later
-- A Google Cloud project with Firestore enabled
-- A service account key file with Firestore access
+## ¿Qué hace?
 
-## Setup
+- Busca Pokémon por nombre, tipo o movimiento (en español e inglés)
+- Monta un equipo de hasta 6 Pokémon
+- Asigna hasta 4 movimientos a cada Pokémon (solo los que puede aprender en HG/SS)
+- Analiza la cobertura ofensiva de tu equipo: qué tipos cubres con tus ataques
+- Analiza las debilidades defensivas: contra qué tipos es vulnerable tu equipo
+- Guarda tu equipo en el navegador para no perderlo
 
-1. Create a service account in Google Cloud Console:
+## Stack
 
-   - Go to IAM & Admin > Service Accounts
-   - Create a new service account
-   - Grant it the necessary Firestore permissions (Cloud Datastore User role)
-   - Create a new key (JSON format)
+- Backend: Go
+- Frontend: React + TypeScript (Vite)
+- Datos: PokeAPI → Firestore → JSON estáticos
+- Deploy: Google Cloud Run
 
-2. Set up your credentials:
-
-   - Download the service account key file from Google Cloud Console
-   - Save it as `service-account.json` in the project root directory
-   - ⚠️ Never commit this file to version control!
-   - Copy `.env.example` to `.env` and set your Google Cloud project ID:
-     ```bash
-     cp .env.example .env
-     ```
-   - Edit `.env` and replace `your-project-id` with your actual Google Cloud project ID
-   - ⚠️ Never commit the `.env` file to version control!
-
-3. Install dependencies:
-   ```bash
-   go mod tidy
-   ```
-
-## Usage
-
-Run the script:
+## Desarrollo local
 
 ```bash
+# Backend
 go run main.go
+
+# Frontend (en otra terminal)
+cd frontend && npm run dev
 ```
 
-The script will:
+El frontend hace proxy al backend en `localhost:8080`.
 
-1. Fetch the Johto Pokédex entries from PokeAPI
-2. Store the data in a Firestore collection named `heartgold-pokemon`
+## Datos
 
-## Note
+Los datos de Pokémon y movimientos se obtienen de [PokeAPI](https://pokeapi.co/) y se almacenan como JSON estáticos en la carpeta `data/`. Para regenerarlos desde Firestore:
 
-The script includes rate limiting (1 second between requests) to avoid overwhelming the PokeAPI.
+```bash
+go run main.go -export
+```

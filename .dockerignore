@@ -1,0 +1,9 @@
+.git
+.kiro
+.vscode
+.env
+service-account.json
+service-account.example.json
+frontend/node_modules
+frontend/.vite
+*.md
