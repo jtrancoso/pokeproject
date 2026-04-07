@@ -33,7 +33,7 @@
   align-items: start;
 }
 
-/* 2-column layout when a slot is selected: detail+moves (wide) | team */
+/* 2-column layout when a slot is selected */
 .app-body--detail {
   grid-template-columns: 2fr 1fr;
 }
@@ -55,10 +55,6 @@
   gap: 12px;
 }
 
-.app-team {
-  /* right column */
-}
-
 .app-analysis {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -73,16 +69,6 @@
   background: #fff;
   border-radius: 10px;
   border: 2px dashed #ddd;
-}
-
-@media (max-width: 900px) {
-  .app-body,
-  .app-body--detail {
-    grid-template-columns: 1fr;
-  }
-  .app-analysis {
-    grid-template-columns: 1fr;
-  }
 }
 
 .app-footer {
@@ -102,4 +88,85 @@
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .app-body {
+    grid-template-columns: 1fr 1fr;
+  }
+  .app-body--detail {
+    grid-template-columns: 1.5fr 1fr;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .app {
+    padding: 10px;
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+  }
+
+  .app-body,
+  .app-body--detail {
+    grid-template-columns: 1fr;
+  }
+
+  .app-results {
+    max-height: 400px;
+  }
+
+  .app-analysis {
+    grid-template-columns: 1fr;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+/* Team grid */
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Move card */
+.move-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .move-card {
+    gap: 4px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+/* Coverage and weakness grids on mobile */
+@media (max-width: 768px) {
+  .app-header h1 img {
+    width: 28px !important;
+    height: 28px !important;
+  }
 }
