@@ -16,12 +16,22 @@ steps:
         "data/heartgold-moves.json",
       ]
 
-  # Build and push Docker image
+  # Build and push Docker image to Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "-t", "gcr.io/${PROJECT_ID}/mochipc:${SHORT_SHA}", "."]
+    args:
+      [
+        "build",
+        "-t",
+        "europe-west1-docker.pkg.dev/${PROJECT_ID}/mochipc/mochipc:${SHORT_SHA}",
+        ".",
+      ]
 
   - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/${PROJECT_ID}/mochipc:${SHORT_SHA}"]
+    args:
+      [
+        "push",
+        "europe-west1-docker.pkg.dev/${PROJECT_ID}/mochipc/mochipc:${SHORT_SHA}",
+      ]
 
   # Deploy to Cloud Run
   - name: "gcr.io/cloud-builders/gcloud"
@@ -29,15 +39,12 @@ steps:
       - "run"
       - "deploy"
       - "mochipc"
-      - "--image=gcr.io/${PROJECT_ID}/mochipc:${SHORT_SHA}"
+      - "--image=europe-west1-docker.pkg.dev/${PROJECT_ID}/mochipc/mochipc:${SHORT_SHA}"
       - "--region=europe-west1"
       - "--memory=1Gi"
       - "--max-instances=1"
       - "--cpu-boost"
       - "--allow-unauthenticated"
-
-images:
-  - "gcr.io/${PROJECT_ID}/mochipc:${SHORT_SHA}"
 
 options:
   logging: CLOUD_LOGGING_ONLY
