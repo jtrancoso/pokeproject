@@ -29,20 +29,15 @@ const MoveCard: React.FC<MoveCardProps> = ({
   const dcLabel = lang
     ? translateDamageClass(move.damage_class, lang)
     : move.damage_class;
+  const iconSrc = CLASS_ICONS[move.damage_class];
 
   return (
     <div
+      className="move-card"
       onClick={isClickable ? onAdd : undefined}
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        padding: "6px 10px",
         background: disabled ? "#f9f9f9" : "#fff",
-        borderRadius: "6px",
-        border: "1px solid #e0e0e0",
         opacity: disabled ? 0.6 : 1,
-        fontSize: "13px",
         cursor: isClickable ? "pointer" : "default",
         transition: "background 0.1s",
       }}
@@ -61,73 +56,71 @@ const MoveCard: React.FC<MoveCardProps> = ({
           textTransform: "capitalize",
           flex: 1,
           minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {move.display_name || move.name.replace(/-/g, " ")}
       </span>
-      <span
-        style={{
-          fontSize: "12px",
-          display: "flex",
-          alignItems: "center",
-          gap: "3px",
-        }}
-      >
-        {CLASS_ICONS[move.damage_class] && (
-          <img
-            src={CLASS_ICONS[move.damage_class]}
-            alt={dcLabel}
-            style={{ width: 16, height: 16, imageRendering: "pixelated" }}
-          />
+      <div className="move-card-stats">
+        <span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+          {iconSrc && (
+            <img
+              src={iconSrc}
+              alt={dcLabel}
+              style={{ width: 16, height: 16, imageRendering: "pixelated" }}
+            />
+          )}
+          {dcLabel}
+        </span>
+        {move.power !== null && (
+          <span style={{ color: "#c0392b", fontWeight: 600 }}>
+            Pow: {move.power}
+          </span>
         )}
-        {dcLabel}
-      </span>
-      {move.power !== null && (
-        <span style={{ color: "#c0392b", fontWeight: 600, fontSize: "12px" }}>
-          Pow: {move.power}
-        </span>
-      )}
-      {move.accuracy !== null && (
-        <span style={{ color: "#2980b9", fontSize: "12px" }}>
-          Acc: {move.accuracy}%
-        </span>
-      )}
-      <span style={{ color: "#888", fontSize: "12px" }}>PP: {move.pp}</span>
-      {onAdd && (
-        <button
-          onClick={onAdd}
-          disabled={disabled}
-          style={{
-            padding: "3px 10px",
-            fontSize: "12px",
-            fontWeight: 600,
-            background: disabled ? "#ccc" : "#27ae60",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: disabled ? "not-allowed" : "pointer",
-          }}
-        >
-          +
-        </button>
-      )}
-      {onRemove && (
-        <button
-          onClick={onRemove}
-          style={{
-            padding: "3px 10px",
-            fontSize: "12px",
-            fontWeight: 600,
-            background: "#e74c3c",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          −
-        </button>
-      )}
+        {move.accuracy !== null && (
+          <span style={{ color: "#2980b9" }}>Acc: {move.accuracy}%</span>
+        )}
+        <span style={{ color: "#888" }}>PP: {move.pp}</span>
+        {onAdd && (
+          <button
+            onClick={onAdd}
+            disabled={disabled}
+            style={{
+              padding: "3px 10px",
+              fontSize: "12px",
+              fontWeight: 600,
+              marginLeft: "auto",
+              background: disabled ? "#ccc" : "#27ae60",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: disabled ? "not-allowed" : "pointer",
+            }}
+          >
+            +
+          </button>
+        )}
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            style={{
+              padding: "3px 10px",
+              fontSize: "12px",
+              fontWeight: 600,
+              marginLeft: "auto",
+              background: "#e74c3c",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            −
+          </button>
+        )}
+      </div>
     </div>
   );
 };

@@ -37,9 +37,7 @@ const TeamPanel: React.FC<TeamPanelProps> = ({
           </span>
         )}
       </div>
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}
-      >
+      <div className="team-grid">
         {team.map((slot, i) => (
           <TeamSlot
             key={i}
