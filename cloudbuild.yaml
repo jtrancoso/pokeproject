@@ -38,3 +38,6 @@ steps:
 
 images:
   - "gcr.io/${PROJECT_ID}/mochipc:${SHORT_SHA}"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
