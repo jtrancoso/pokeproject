@@ -18,8 +18,15 @@ import CoverageChart from "./components/CoverageChart";
 import WeaknessChart from "./components/WeaknessChart";
 
 function App() {
-  const { team, addPokemon, removePokemon, addMove, removeMove, isFull } =
-    useTeam();
+  const {
+    team,
+    addPokemon,
+    replacePokemon,
+    removePokemon,
+    addMove,
+    removeMove,
+    isFull,
+  } = useTeam();
   const { lang, setLang, langParam } = useLang();
   const {
     query,
@@ -39,6 +46,22 @@ function App() {
     selectedSlot !== null ? (team[selectedSlot]?.moves ?? []) : [];
   const allTypes = typeChart?.types ?? [];
   const chart = typeChart?.chart ?? {};
+
+  const handleDropPokemon = useCallback(
+    async (slotIndex: number, pokemonName: string) => {
+      try {
+        const res = await fetch(
+          `/api/pokemon/${encodeURIComponent(pokemonName)}`,
+        );
+        if (!res.ok) return;
+        const detail: PokemonDetailType = await res.json();
+        replacePokemon(slotIndex, detail);
+      } catch {
+        /* silently fail */
+      }
+    },
+    [replacePokemon],
+  );
 
   const handleAddPokemon = useCallback(
     async (pokemon: SearchMatchItem) => {
@@ -190,6 +213,7 @@ function App() {
             onSelectSlot={setSelectedSlot}
             isFull={isFull}
             lang={lang}
+            onDropPokemon={handleDropPokemon}
           />
         </aside>
       </div>

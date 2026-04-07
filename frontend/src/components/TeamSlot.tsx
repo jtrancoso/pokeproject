@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { TeamSlot as TeamSlotType } from "../types/pokemon";
 import { t, type Lang } from "../utils/i18n";
 import TypeBadge from "./TypeBadge";
@@ -10,6 +10,7 @@ interface TeamSlotProps {
   onSelect: () => void;
   isSelected: boolean;
   lang: Lang;
+  onDropPokemon: (pokemonName: string) => void;
 }
 
 const TeamSlot: React.FC<TeamSlotProps> = ({
@@ -19,17 +20,35 @@ const TeamSlot: React.FC<TeamSlotProps> = ({
   onSelect,
   isSelected,
   lang,
+  onDropPokemon,
 }) => {
   const isEmpty = slot.pokemon === null;
+  const [dragOver, setDragOver] = useState(false);
 
   return (
     <div
       onClick={onSelect}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const name = e.dataTransfer.getData("pokemon-name");
+        if (name) onDropPokemon(name);
+      }}
       style={{
         padding: "10px",
         borderRadius: "10px",
-        border: isSelected ? "2px solid #6890F0" : "2px solid #e0e0e0",
-        background: isSelected ? "#f0f5ff" : "#fff",
+        border: dragOver
+          ? "2px dashed #6890F0"
+          : isSelected
+            ? "2px solid #6890F0"
+            : "2px solid #e0e0e0",
+        background: dragOver ? "#e8f0fe" : isSelected ? "#f0f5ff" : "#fff",
         cursor: "pointer",
         minHeight: "80px",
         display: "flex",

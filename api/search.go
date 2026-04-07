@@ -47,6 +47,31 @@ var validTypes = map[string]bool{
 	"steel": true,
 }
 
+// typeTranslations maps translated type names to their English API name.
+var typeTranslations = map[string]string{
+	// Spanish
+	"normal": "normal", "fuego": "fire", "agua": "water", "eléctrico": "electric",
+	"electrico": "electric", "planta": "grass", "hielo": "ice", "lucha": "fighting",
+	"veneno": "poison", "tierra": "ground", "volador": "flying", "psíquico": "psychic",
+	"psiquico": "psychic", "bicho": "bug", "roca": "rock", "fantasma": "ghost",
+	"dragón": "dragon", "dragon": "dragon", "siniestro": "dark", "acero": "steel",
+	// English (identity)
+	"fire": "fire", "water": "water", "electric": "electric", "grass": "grass",
+	"ice": "ice", "fighting": "fighting", "poison": "poison", "ground": "ground",
+	"flying": "flying", "psychic": "psychic", "bug": "bug", "rock": "rock",
+	"ghost": "ghost", "dark": "dark", "steel": "steel",
+}
+
+// resolveTypeQuery checks if the query matches a type name (in any language).
+// Returns the English type name or "" if not a type.
+func resolveTypeQuery(query string) string {
+	// Exact match
+	if apiType, ok := typeTranslations[query]; ok {
+		return apiType
+	}
+	return ""
+}
+
 // SearchCached handles GET /api/search?q={query} using in-memory cache.
 func SearchCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
 	if r.Method != http.MethodGet {
@@ -66,15 +91,16 @@ func SearchCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
 		return
 	}
 
+	// Check if query matches a type (in any language)
+	matchedType := resolveTypeQuery(query)
+
 	// Find matching moves: search by API name AND by translated names
 	matchingMoves := make(map[string]bool)
-	// Search by API name
 	for name := range cache.MovesRaw {
 		if strings.Contains(name, query) {
 			matchingMoves[name] = true
 		}
 	}
-	// Search by translated name (e.g. "placaje" -> "tackle")
 	for translatedName, apiName := range cache.MoveNameIndex {
 		if strings.Contains(translatedName, query) {
 			matchingMoves[apiName] = true
@@ -85,10 +111,8 @@ func SearchCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
 	byType := []SearchMatchItem{}
 	byMove := []SearchMatchItem{}
 
-	isTypeSearch := validTypes[query]
-
-	log.Printf("Search: query=%q, pokemonCount=%d, matchingMoves=%d, isTypeSearch=%v",
-		query, len(cache.PokemonRaw), len(matchingMoves), isTypeSearch)
+	log.Printf("Search: query=%q, matchedType=%q, matchingMoves=%d",
+		query, matchedType, len(matchingMoves))
 
 	for _, data := range cache.PokemonRaw {
 		item := buildSearchMatchItem(data)
@@ -100,8 +124,8 @@ func SearchCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
 			byName = append(byName, match)
 		}
 
-		// Search by type
-		if isTypeSearch && pokemonHasType(item, query) {
+		// Search by type (using resolved type name)
+		if matchedType != "" && pokemonHasType(item, matchedType) {
 			match := item
 			match.MatchReason = "type"
 			byType = append(byType, match)
@@ -112,7 +136,6 @@ func SearchCached(w http.ResponseWriter, r *http.Request, cache *Cache) {
 			if matchedMove := pokemonLearnsMoveInHGSS(data, matchingMoves); matchedMove != "" {
 				match := item
 				match.MatchReason = "move"
-				// Show the translated name of the matched move
 				if moveData, ok := cache.MovesRaw[matchedMove]; ok {
 					lang := getLang(r)
 					match.MatchedMove = getTranslatedName(moveData, lang)

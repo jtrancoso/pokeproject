@@ -10,6 +10,7 @@ interface TeamPanelProps {
   onSelectSlot: (index: number) => void;
   isFull: boolean;
   lang: Lang;
+  onDropPokemon: (slotIndex: number, pokemonName: string) => void;
 }
 
 const TeamPanel: React.FC<TeamPanelProps> = ({
@@ -19,6 +20,7 @@ const TeamPanel: React.FC<TeamPanelProps> = ({
   onSelectSlot,
   isFull,
   lang,
+  onDropPokemon,
 }) => {
   return (
     <div>
@@ -47,6 +49,7 @@ const TeamPanel: React.FC<TeamPanelProps> = ({
             onSelect={() => onSelectSlot(i)}
             isSelected={selectedSlot === i}
             lang={lang}
+            onDropPokemon={(name) => onDropPokemon(i, name)}
           />
         ))}
       </div>

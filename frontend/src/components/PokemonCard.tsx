@@ -12,6 +12,12 @@ interface PokemonCardProps {
 const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd, lang }) => {
   return (
     <div
+      onClick={onAdd}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("pokemon-name", pokemon.name);
+        e.dataTransfer.effectAllowed = "copy";
+      }}
       style={{
         display: "flex",
         alignItems: "center",
@@ -20,6 +26,14 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd, lang }) => {
         background: "#fff",
         borderRadius: "8px",
         border: "1px solid #e0e0e0",
+        cursor: "pointer",
+        transition: "background 0.1s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "#f0f5ff";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "#fff";
       }}
     >
       <img
@@ -54,22 +68,19 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd, lang }) => {
           </div>
         )}
       </div>
-      <button
-        onClick={onAdd}
+      <span
         style={{
           padding: "6px 14px",
           fontSize: "13px",
           fontWeight: 600,
           background: "#6890F0",
           color: "#fff",
-          border: "none",
           borderRadius: "6px",
-          cursor: "pointer",
           whiteSpace: "nowrap",
         }}
       >
         {t("team.add", lang)}
-      </button>
+      </span>
     </div>
   );
 };

@@ -31,6 +31,7 @@ function loadTeamFromStorage(): TeamSlot[] {
 export interface UseTeamReturn {
   team: TeamSlot[];
   addPokemon: (pokemon: PokemonDetail) => boolean;
+  replacePokemon: (slotIndex: number, pokemon: PokemonDetail) => void;
   removePokemon: (slotIndex: number) => void;
   addMove: (slotIndex: number, move: MoveDetail) => boolean;
   removeMove: (slotIndex: number, moveIndex: number) => void;
@@ -57,6 +58,18 @@ export function useTeam(): UseTeamReturn {
     });
     return added;
   }, []);
+
+  const replacePokemon = useCallback(
+    (slotIndex: number, pokemon: PokemonDetail): void => {
+      setTeam((prev) => {
+        if (slotIndex < 0 || slotIndex >= MAX_TEAM_SIZE) return prev;
+        const next = [...prev];
+        next[slotIndex] = { pokemon, moves: [] };
+        return next;
+      });
+    },
+    [],
+  );
 
   const removePokemon = useCallback((slotIndex: number): void => {
     setTeam((prev) => {
@@ -108,5 +121,13 @@ export function useTeam(): UseTeamReturn {
     [team],
   );
 
-  return { team, addPokemon, removePokemon, addMove, removeMove, isFull };
+  return {
+    team,
+    addPokemon,
+    replacePokemon,
+    removePokemon,
+    addMove,
+    removeMove,
+    isFull,
+  };
 }
