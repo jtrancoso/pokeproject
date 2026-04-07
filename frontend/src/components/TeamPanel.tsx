@@ -1,5 +1,6 @@
 import React from "react";
 import type { TeamSlot as TeamSlotType } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
 import TeamSlot from "./TeamSlot";
 
 interface TeamPanelProps {
@@ -8,6 +9,7 @@ interface TeamPanelProps {
   selectedSlot: number | null;
   onSelectSlot: (index: number) => void;
   isFull: boolean;
+  lang: Lang;
 }
 
 const TeamPanel: React.FC<TeamPanelProps> = ({
@@ -16,6 +18,7 @@ const TeamPanel: React.FC<TeamPanelProps> = ({
   selectedSlot,
   onSelectSlot,
   isFull,
+  lang,
 }) => {
   return (
     <div>
@@ -27,19 +30,15 @@ const TeamPanel: React.FC<TeamPanelProps> = ({
           marginBottom: "10px",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "16px" }}>Equipo</h3>
+        <h3 style={{ margin: 0, fontSize: "16px" }}>{t("team.title", lang)}</h3>
         {isFull && (
           <span style={{ fontSize: "12px", color: "#e74c3c", fontWeight: 600 }}>
-            Equipo completo
+            {t("team.full", lang)}
           </span>
         )}
       </div>
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "8px",
-        }}
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}
       >
         {team.map((slot, i) => (
           <TeamSlot
@@ -49,6 +48,7 @@ const TeamPanel: React.FC<TeamPanelProps> = ({
             onRemove={() => onRemovePokemon(i)}
             onSelect={() => onSelectSlot(i)}
             isSelected={selectedSlot === i}
+            lang={lang}
           />
         ))}
       </div>

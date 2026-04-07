@@ -1,15 +1,18 @@
 import React from "react";
+import { t, type Lang } from "../utils/i18n";
 
 interface SearchBarProps {
   query: string;
   onQueryChange: (q: string) => void;
   loading: boolean;
+  lang: Lang;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   query,
   onQueryChange,
   loading,
+  lang,
 }) => {
   return (
     <div style={{ position: "relative", width: "100%" }}>
@@ -17,7 +20,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         type="text"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
-        placeholder="Buscar por nombre, tipo o movimiento..."
+        placeholder={t("search.placeholder", lang)}
         style={{
           width: "100%",
           padding: "10px 16px",
@@ -41,7 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             color: "#888",
           }}
         >
-          Buscando...
+          {t("search.loading", lang)}
         </span>
       )}
     </div>

@@ -1,13 +1,15 @@
 import React from "react";
 import type { SearchMatchItem } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
 import TypeBadge from "./TypeBadge";
 
 interface PokemonCardProps {
   pokemon: SearchMatchItem;
   onAdd: () => void;
+  lang: Lang;
 }
 
-const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd }) => {
+const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd, lang }) => {
   return (
     <div
       style={{
@@ -42,13 +44,13 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd }) => {
         <div
           style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}
         >
-          {pokemon.types.map((t) => (
-            <TypeBadge key={t.type.name} typeName={t.type.name} />
+          {pokemon.types.map((tp) => (
+            <TypeBadge key={tp.type.name} typeName={tp.type.name} lang={lang} />
           ))}
         </div>
         {pokemon.match_reason === "move" && pokemon.matched_move && (
           <div style={{ fontSize: "12px", color: "#666", marginTop: 2 }}>
-            Movimiento: <strong>{pokemon.matched_move}</strong>
+            {t("moves.move", lang)}: <strong>{pokemon.matched_move}</strong>
           </div>
         )}
       </div>
@@ -66,7 +68,7 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onAdd }) => {
           whiteSpace: "nowrap",
         }}
       >
-        Añadir
+        {t("team.add", lang)}
       </button>
     </div>
   );

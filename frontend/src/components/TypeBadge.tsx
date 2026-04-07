@@ -1,4 +1,6 @@
 import React from "react";
+import type { Lang } from "../utils/i18n";
+import { translateType } from "../utils/gameTranslations";
 
 const TYPE_COLORS: Record<string, string> = {
   normal: "#A8A878",
@@ -22,10 +24,12 @@ const TYPE_COLORS: Record<string, string> = {
 
 interface TypeBadgeProps {
   typeName: string;
+  lang?: Lang;
 }
 
-const TypeBadge: React.FC<TypeBadgeProps> = ({ typeName }) => {
+const TypeBadge: React.FC<TypeBadgeProps> = ({ typeName, lang }) => {
   const color = TYPE_COLORS[typeName.toLowerCase()] ?? "#888";
+  const label = lang ? translateType(typeName, lang) : typeName;
 
   return (
     <span
@@ -41,7 +45,7 @@ const TypeBadge: React.FC<TypeBadgeProps> = ({ typeName }) => {
         letterSpacing: "0.5px",
       }}
     >
-      {typeName}
+      {label}
     </span>
   );
 };

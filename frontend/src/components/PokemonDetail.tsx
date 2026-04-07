@@ -1,9 +1,12 @@
 import React from "react";
 import type { PokemonDetail as PokemonDetailType } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
+import { translateStat } from "../utils/gameTranslations";
 import TypeBadge from "./TypeBadge";
 
 interface PokemonDetailProps {
   pokemon: PokemonDetailType;
+  lang: Lang;
 }
 
 const STAT_COLORS: Record<string, string> = {
@@ -14,17 +17,7 @@ const STAT_COLORS: Record<string, string> = {
   "special-defense": "#A7DB8D",
   speed: "#FA92B2",
 };
-
-const STAT_LABELS: Record<string, string> = {
-  hp: "HP",
-  attack: "Attack",
-  defense: "Defense",
-  "special-attack": "Sp.Atk",
-  "special-defense": "Sp.Def",
-  speed: "Speed",
-};
-
-const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
+const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, lang }) => {
   return (
     <div
       style={{
@@ -54,13 +47,16 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
             {pokemon.name}
           </h3>
           <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
-            {pokemon.types.map((t) => (
-              <TypeBadge key={t.type.name} typeName={t.type.name} />
+            {pokemon.types.map((tp) => (
+              <TypeBadge
+                key={tp.type.name}
+                typeName={tp.type.name}
+                lang={lang}
+              />
             ))}
           </div>
         </div>
       </div>
-
       <div style={{ marginBottom: "12px" }}>
         <h4
           style={{
@@ -70,12 +66,10 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
             textTransform: "uppercase",
           }}
         >
-          Stats Base
+          {t("detail.baseStats", lang)}
         </h4>
         {pokemon.stats.map((s) => {
           const pct = Math.min((s.base_stat / 255) * 100, 100);
-          const color = STAT_COLORS[s.stat.name] ?? "#aaa";
-          const label = STAT_LABELS[s.stat.name] ?? s.stat.name;
           return (
             <div
               key={s.stat.name}
@@ -94,7 +88,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
                   textAlign: "right",
                 }}
               >
-                {label}
+                {translateStat(s.stat.name, lang)}
               </span>
               <span
                 style={{ width: "30px", fontSize: "12px", textAlign: "right" }}
@@ -114,7 +108,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
                   style={{
                     width: `${pct}%`,
                     height: "100%",
-                    background: color,
+                    background: STAT_COLORS[s.stat.name] ?? "#aaa",
                     borderRadius: "5px",
                     transition: "width 0.3s",
                   }}
@@ -124,7 +118,6 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
           );
         })}
       </div>
-
       <div>
         <h4
           style={{
@@ -134,7 +127,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
             textTransform: "uppercase",
           }}
         >
-          Habilidades
+          {t("detail.abilities", lang)}
         </h4>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {pokemon.abilities.map((a) => (
@@ -144,9 +137,9 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
                 padding: "3px 10px",
                 borderRadius: "6px",
                 fontSize: "12px",
+                textTransform: "capitalize",
                 background: a.is_hidden ? "#f0e6ff" : "#f0f0f0",
                 border: a.is_hidden ? "1px solid #d0b0ff" : "1px solid #ddd",
-                textTransform: "capitalize",
               }}
             >
               {a.ability.name.replace("-", " ")}
@@ -154,7 +147,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon }) => {
                 <span
                   style={{ fontSize: "10px", color: "#9b59b6", marginLeft: 4 }}
                 >
-                  (oculta)
+                  {t("detail.hidden", lang)}
                 </span>
               )}
             </span>

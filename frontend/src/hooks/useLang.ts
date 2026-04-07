@@ -1,11 +1,10 @@
 import { useState, useCallback } from "react";
-
-export type Lang = "en" | "es";
+import type { Lang } from "../utils/i18n";
 
 export interface UseLangReturn {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  langParam: string; // "?lang=es" or ""
+  langParam: string;
 }
 
 export function useLang(): UseLangReturn {

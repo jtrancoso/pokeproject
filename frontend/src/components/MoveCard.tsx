@@ -1,5 +1,7 @@
 import React from "react";
 import type { MoveDetail } from "../types/pokemon";
+import type { Lang } from "../utils/i18n";
+import { translateDamageClass } from "../utils/gameTranslations";
 import TypeBadge from "./TypeBadge";
 
 interface MoveCardProps {
@@ -7,12 +9,13 @@ interface MoveCardProps {
   onAdd?: () => void;
   onRemove?: () => void;
   disabled?: boolean;
+  lang?: Lang;
 }
 
 const CLASS_ICONS: Record<string, string> = {
-  physical: "💥",
-  special: "✨",
-  status: "🔄",
+  physical: "/icons/physical.png",
+  special: "/icons/special.png",
+  status: "/icons/status.png",
 };
 
 const MoveCard: React.FC<MoveCardProps> = ({
@@ -20,8 +23,12 @@ const MoveCard: React.FC<MoveCardProps> = ({
   onAdd,
   onRemove,
   disabled,
+  lang,
 }) => {
   const isClickable = onAdd && !disabled;
+  const dcLabel = lang
+    ? translateDamageClass(move.damage_class, lang)
+    : move.damage_class;
 
   return (
     <div
@@ -47,7 +54,7 @@ const MoveCard: React.FC<MoveCardProps> = ({
           e.currentTarget.style.background = disabled ? "#f9f9f9" : "#fff";
       }}
     >
-      <TypeBadge typeName={move.type} />
+      <TypeBadge typeName={move.type} lang={lang} />
       <span
         style={{
           fontWeight: 600,
@@ -58,25 +65,34 @@ const MoveCard: React.FC<MoveCardProps> = ({
       >
         {move.display_name || move.name.replace(/-/g, " ")}
       </span>
-      <span title="Clase de daño" style={{ fontSize: "12px" }}>
-        {CLASS_ICONS[move.damage_class] ?? ""} {move.damage_class}
+      <span
+        style={{
+          fontSize: "12px",
+          display: "flex",
+          alignItems: "center",
+          gap: "3px",
+        }}
+      >
+        {CLASS_ICONS[move.damage_class] && (
+          <img
+            src={CLASS_ICONS[move.damage_class]}
+            alt={dcLabel}
+            style={{ width: 16, height: 16, imageRendering: "pixelated" }}
+          />
+        )}
+        {dcLabel}
       </span>
       {move.power !== null && (
-        <span
-          style={{ color: "#c0392b", fontWeight: 600, fontSize: "12px" }}
-          title="Poder"
-        >
+        <span style={{ color: "#c0392b", fontWeight: 600, fontSize: "12px" }}>
           Pow: {move.power}
         </span>
       )}
       {move.accuracy !== null && (
-        <span style={{ color: "#2980b9", fontSize: "12px" }} title="Precisión">
+        <span style={{ color: "#2980b9", fontSize: "12px" }}>
           Acc: {move.accuracy}%
         </span>
       )}
-      <span style={{ color: "#888", fontSize: "12px" }} title="PP">
-        PP: {move.pp}
-      </span>
+      <span style={{ color: "#888", fontSize: "12px" }}>PP: {move.pp}</span>
       {onAdd && (
         <button
           onClick={onAdd}

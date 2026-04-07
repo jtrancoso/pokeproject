@@ -84,3 +84,22 @@
     grid-template-columns: 1fr;
   }
 }
+
+.app-footer {
+  margin-top: 24px;
+  padding: 16px 0;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #888;
+}
+
+.app-footer a {
+  color: #6890f0;
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { MoveDetail } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
 import MoveCard from "./MoveCard";
 
 interface MoveSelectorProps {
@@ -8,16 +9,17 @@ interface MoveSelectorProps {
   onAddMove: (move: MoveDetail) => void;
   onRemoveMove: (index: number) => void;
   langParam: string;
+  lang: Lang;
 }
 
 type LearnMethod = "all" | "level-up" | "machine" | "tutor" | "egg";
 
-const TABS: { label: string; value: LearnMethod }[] = [
-  { label: "Todos", value: "all" },
-  { label: "Nivel", value: "level-up" },
-  { label: "MT/MO", value: "machine" },
-  { label: "Tutor", value: "tutor" },
-  { label: "Huevo", value: "egg" },
+const TAB_KEYS: { key: string; value: LearnMethod }[] = [
+  { key: "moves.all", value: "all" },
+  { key: "moves.levelUp", value: "level-up" },
+  { key: "moves.machine", value: "machine" },
+  { key: "moves.tutor", value: "tutor" },
+  { key: "moves.egg", value: "egg" },
 ];
 
 const MoveSelector: React.FC<MoveSelectorProps> = ({
@@ -26,6 +28,7 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
   onAddMove,
   onRemoveMove,
   langParam,
+  lang,
 }) => {
   const [allMoves, setAllMoves] = useState<MoveDetail[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,16 +46,14 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
       `/api/pokemon/${encodeURIComponent(pokemonName)}/moves${langParam ? "?" + langParam : ""}`,
     )
       .then((res) => {
-        if (!res.ok)
-          throw new Error(`Error cargando movimientos (${res.status})`);
+        if (!res.ok) throw new Error(`Error (${res.status})`);
         return res.json();
       })
       .then((data: { pokemon: string; moves: MoveDetail[] }) => {
         if (!cancelled) setAllMoves(data.moves);
       })
       .catch((err) => {
-        if (!cancelled)
-          setError(err instanceof Error ? err.message : "Error desconocido");
+        if (!cancelled) setError(err instanceof Error ? err.message : "Error");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -61,17 +62,14 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [pokemonName]);
+  }, [pokemonName, langParam]);
 
   const assignedNames = new Set(assignedMoves.map((m) => m.name));
   const maxReached = assignedMoves.length >= 4;
-
   const filtered =
     filter === "all"
       ? allMoves
       : allMoves.filter((m) => m.learn_method === filter);
-
-  // Sort level-up by level
   const sorted =
     filter === "level-up"
       ? [...filtered].sort((a, b) => a.level_learned_at - b.level_learned_at)
@@ -87,11 +85,11 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
       }}
     >
       <h4 style={{ margin: "0 0 8px", fontSize: "14px" }}>
-        Movimientos asignados ({assignedMoves.length}/4)
+        {t("moves.assigned", lang)} ({assignedMoves.length}/4)
       </h4>
       {assignedMoves.length === 0 ? (
         <div style={{ fontSize: "13px", color: "#aaa", marginBottom: "12px" }}>
-          Ningún movimiento asignado
+          {t("moves.none", lang)}
         </div>
       ) : (
         <div
@@ -103,15 +101,19 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
           }}
         >
           {assignedMoves.map((m, i) => (
-            <MoveCard key={m.name} move={m} onRemove={() => onRemoveMove(i)} />
+            <MoveCard
+              key={m.name}
+              move={m}
+              onRemove={() => onRemoveMove(i)}
+              lang={lang}
+            />
           ))}
         </div>
       )}
 
       <h4 style={{ margin: "0 0 8px", fontSize: "14px" }}>
-        Movimientos disponibles
+        {t("moves.available", lang)}
       </h4>
-
       <div
         style={{
           display: "flex",
@@ -120,7 +122,7 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
           flexWrap: "wrap",
         }}
       >
-        {TABS.map((tab) => (
+        {TAB_KEYS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setFilter(tab.value)}
@@ -135,14 +137,14 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
               cursor: "pointer",
             }}
           >
-            {tab.label}
+            {t(tab.key, lang)}
           </button>
         ))}
       </div>
 
       {loading && (
         <div style={{ fontSize: "13px", color: "#888" }}>
-          Cargando movimientos...
+          {t("moves.loading", lang)}
         </div>
       )}
       {error && (
@@ -161,20 +163,18 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({
         >
           {sorted.length === 0 ? (
             <div style={{ fontSize: "13px", color: "#aaa" }}>
-              No hay movimientos en esta categoría
+              {t("moves.emptyCategory", lang)}
             </div>
           ) : (
-            sorted.map((m) => {
-              const isAssigned = assignedNames.has(m.name);
-              return (
-                <MoveCard
-                  key={`${m.name}-${m.learn_method}`}
-                  move={m}
-                  onAdd={() => onAddMove(m)}
-                  disabled={isAssigned || maxReached}
-                />
-              );
-            })
+            sorted.map((m) => (
+              <MoveCard
+                key={`${m.name}-${m.learn_method}`}
+                move={m}
+                onAdd={() => onAddMove(m)}
+                disabled={assignedNames.has(m.name) || maxReached}
+                lang={lang}
+              />
+            ))
           )}
         </div>
       )}

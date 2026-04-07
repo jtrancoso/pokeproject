@@ -8,6 +8,7 @@ import { useTeam } from "./hooks/useTeam";
 import { useSearch } from "./hooks/useSearch";
 import { useTypeChart } from "./hooks/useTypeChart";
 import { useLang } from "./hooks/useLang";
+import { t } from "./utils/i18n";
 import SearchBar from "./components/SearchBar";
 import SearchResults from "./components/SearchResults";
 import TeamPanel from "./components/TeamPanel";
@@ -36,7 +37,6 @@ function App() {
     selectedSlot !== null ? (team[selectedSlot]?.pokemon ?? null) : null;
   const selectedMoves =
     selectedSlot !== null ? (team[selectedSlot]?.moves ?? []) : [];
-
   const allTypes = typeChart?.types ?? [];
   const chart = typeChart?.chart ?? {};
 
@@ -48,17 +48,17 @@ function App() {
         const res = await fetch(
           `/api/pokemon/${encodeURIComponent(pokemon.name)}`,
         );
-        if (!res.ok) throw new Error("Error al obtener detalle");
+        if (!res.ok) throw new Error("Error");
         const detail: PokemonDetailType = await res.json();
         addPokemon(detail);
-        setQuery(""); // Clear search after adding
+        setQuery("");
       } catch {
-        // silently fail for MVP
+        /* silently fail */
       } finally {
         setFetchingDetail(false);
       }
     },
-    [addPokemon, isFull],
+    [addPokemon, isFull, setQuery],
   );
 
   const handleRemovePokemon = useCallback(
@@ -69,47 +69,47 @@ function App() {
     [removePokemon, selectedSlot],
   );
 
-  // When a slot is selected, use a 2-column layout (detail+moves | team)
-  // instead of 3-column (results | detail | team)
   const hasSelection = selectedPokemon !== null;
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Pokémon Team Builder</h1>
+        <h1
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="/icons/favicon.png"
+            alt="MochiPC"
+            style={{ width: 36, height: 36, imageRendering: "pixelated" }}
+          />
+          MochiPC
+        </h1>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span className="subtitle">HeartGold / SoulSilver</span>
+          <span className="subtitle">{t("header.subtitle", lang)}</span>
           <div style={{ display: "flex", gap: "4px", marginLeft: "12px" }}>
-            <button
-              onClick={() => setLang("en")}
-              style={{
-                padding: "3px 10px",
-                fontSize: "12px",
-                fontWeight: lang === "en" ? 700 : 400,
-                background: lang === "en" ? "#6890F0" : "#e0e0e0",
-                color: lang === "en" ? "#fff" : "#333",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLang("es")}
-              style={{
-                padding: "3px 10px",
-                fontSize: "12px",
-                fontWeight: lang === "es" ? 700 : 400,
-                background: lang === "es" ? "#6890F0" : "#e0e0e0",
-                color: lang === "es" ? "#fff" : "#333",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              ES
-            </button>
+            {(["en", "es"] as const).map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                style={{
+                  padding: "3px 10px",
+                  fontSize: "12px",
+                  fontWeight: lang === l ? 700 : 400,
+                  background: lang === l ? "#6890F0" : "#e0e0e0",
+                  color: lang === l ? "#fff" : "#333",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
           </div>
         </div>
       </header>
@@ -119,6 +119,7 @@ function App() {
           query={query}
           onQueryChange={setQuery}
           loading={searchLoading || fetchingDetail}
+          lang={lang}
         />
       </div>
 
@@ -136,7 +137,7 @@ function App() {
                   fontSize: "13px",
                 }}
               >
-                Error: {searchError}
+                {t("search.error", lang)}: {searchError}
               </div>
             )}
             {query.length >= 2 &&
@@ -148,16 +149,20 @@ function App() {
                 <div
                   style={{ padding: "12px", color: "#888", fontSize: "13px" }}
                 >
-                  No se encontraron resultados para "{query}"
+                  {t("search.noResults", lang)} "{query}"
                 </div>
               )}
-            <SearchResults results={results} onAddPokemon={handleAddPokemon} />
+            <SearchResults
+              results={results}
+              onAddPokemon={handleAddPokemon}
+              lang={lang}
+            />
           </aside>
         )}
 
         {hasSelection ? (
           <main className="app-center-wide">
-            <PokemonDetail pokemon={selectedPokemon} />
+            <PokemonDetail pokemon={selectedPokemon} lang={lang} />
             <MoveSelector
               pokemonName={selectedPokemon.name}
               assignedMoves={selectedMoves}
@@ -168,14 +173,12 @@ function App() {
                 selectedSlot !== null && removeMove(selectedSlot, moveIdx)
               }
               langParam={langParam}
+              lang={lang}
             />
           </main>
         ) : (
           <main className="app-center">
-            <div className="placeholder">
-              Busca Pokémon y añádelos al equipo. Luego selecciona un slot para
-              asignar movimientos.
-            </div>
+            <div className="placeholder">{t("placeholder.text", lang)}</div>
           </main>
         )}
 
@@ -186,16 +189,44 @@ function App() {
             selectedSlot={selectedSlot}
             onSelectSlot={setSelectedSlot}
             isFull={isFull}
+            lang={lang}
           />
         </aside>
       </div>
 
       {allTypes.length > 0 && (
         <div className="app-analysis">
-          <CoverageChart team={team} allTypes={allTypes} chart={chart} />
-          <WeaknessChart team={team} allTypes={allTypes} chart={chart} />
+          <CoverageChart
+            team={team}
+            allTypes={allTypes}
+            chart={chart}
+            lang={lang}
+          />
+          <WeaknessChart
+            team={team}
+            allTypes={allTypes}
+            chart={chart}
+            lang={lang}
+          />
         </div>
       )}
+
+      <footer className="app-footer">
+        <span>
+          {t("footer.suggestions", lang)}{" "}
+          <a href="mailto:chatter@mochipc.com">chatter@mochipc.com</a>
+        </span>
+        <span>
+          {t("footer.data", lang)}{" "}
+          <a
+            href="https://pokeapi.co/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            PokeAPI
+          </a>
+        </span>
+      </footer>
     </div>
   );
 }

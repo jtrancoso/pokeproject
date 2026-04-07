@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { TeamSlot, TypeChart } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
 import { getEffectiveness } from "../utils/typeCalculator";
 import TypeBadge from "./TypeBadge";
 
@@ -7,6 +8,7 @@ interface WeaknessChartProps {
   team: TeamSlot[];
   allTypes: string[];
   chart: TypeChart["chart"];
+  lang: Lang;
 }
 
 interface WeaknessDetail {
@@ -19,6 +21,7 @@ const WeaknessChart: React.FC<WeaknessChartProps> = ({
   team,
   allTypes,
   chart,
+  lang,
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -71,7 +74,7 @@ const WeaknessChart: React.FC<WeaknessChartProps> = ({
       }}
     >
       <h4 style={{ margin: "0 0 10px", fontSize: "14px" }}>
-        Debilidades del Equipo
+        {t("weakness.title", lang)}
       </h4>
       <div
         style={{
@@ -103,7 +106,7 @@ const WeaknessChart: React.FC<WeaknessChartProps> = ({
                   cursor: hasDetails ? "pointer" : "default",
                 }}
               >
-                <TypeBadge typeName={type} />
+                <TypeBadge typeName={type} lang={lang} />
                 <div
                   style={{
                     flex: 1,

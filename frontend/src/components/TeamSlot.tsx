@@ -1,5 +1,6 @@
 import React from "react";
 import type { TeamSlot as TeamSlotType } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
 import TypeBadge from "./TypeBadge";
 
 interface TeamSlotProps {
@@ -8,6 +9,7 @@ interface TeamSlotProps {
   onRemove: () => void;
   onSelect: () => void;
   isSelected: boolean;
+  lang: Lang;
 }
 
 const TeamSlot: React.FC<TeamSlotProps> = ({
@@ -16,6 +18,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({
   onRemove,
   onSelect,
   isSelected,
+  lang,
 }) => {
   const isEmpty = slot.pokemon === null;
 
@@ -44,7 +47,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({
             fontSize: "13px",
           }}
         >
-          Slot {slotIndex + 1} — vacío
+          {t("team.slot", lang)} {slotIndex + 1} — {t("team.empty", lang)}
         </div>
       ) : (
         <>
@@ -71,13 +74,17 @@ const TeamSlot: React.FC<TeamSlotProps> = ({
                 marginTop: 2,
               }}
             >
-              {slot.pokemon!.types.map((t) => (
-                <TypeBadge key={t.type.name} typeName={t.type.name} />
+              {slot.pokemon!.types.map((tp) => (
+                <TypeBadge
+                  key={tp.type.name}
+                  typeName={tp.type.name}
+                  lang={lang}
+                />
               ))}
             </div>
             {slot.moves.length > 0 && (
               <div style={{ fontSize: "11px", color: "#888", marginTop: 2 }}>
-                {slot.moves.length}/4 movimientos
+                {slot.moves.length}/4 {t("team.moves", lang)}
               </div>
             )}
           </div>

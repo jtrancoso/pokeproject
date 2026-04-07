@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { TeamSlot, TypeChart } from "../types/pokemon";
+import { t, type Lang } from "../utils/i18n";
 import { getEffectiveness } from "../utils/typeCalculator";
 import TypeBadge from "./TypeBadge";
 
@@ -7,13 +8,12 @@ interface CoverageChartProps {
   team: TeamSlot[];
   allTypes: string[];
   chart: TypeChart["chart"];
+  lang: Lang;
 }
 
 interface CoverageDetail {
   pokemonName: string;
-  moveName: string;
   moveDisplayName: string;
-  moveType: string;
   effectiveness: number;
 }
 
@@ -21,10 +21,10 @@ const CoverageChart: React.FC<CoverageChartProps> = ({
   team,
   allTypes,
   chart,
+  lang,
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  // Build detailed coverage: for each defender type, which moves are super effective
   const details = useMemo(() => {
     const map: Record<string, CoverageDetail[]> = {};
     for (const defType of allTypes) {
@@ -41,9 +41,7 @@ const CoverageChart: React.FC<CoverageChartProps> = ({
           if (eff > 1.0) {
             hits.push({
               pokemonName: slot.pokemon.name,
-              moveName: move.name,
               moveDisplayName: move.display_name || move.name,
-              moveType: move.type,
               effectiveness: eff,
             });
           }
@@ -64,7 +62,7 @@ const CoverageChart: React.FC<CoverageChartProps> = ({
       }}
     >
       <h4 style={{ margin: "0 0 10px", fontSize: "14px" }}>
-        Cobertura Ofensiva
+        {t("coverage.title", lang)}
       </h4>
       <div
         style={{
@@ -81,7 +79,9 @@ const CoverageChart: React.FC<CoverageChartProps> = ({
           return (
             <div key={type}>
               <div
-                onClick={() => setExpanded(isExpanded ? null : type)}
+                onClick={() =>
+                  count > 0 && setExpanded(isExpanded ? null : type)
+                }
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -93,7 +93,7 @@ const CoverageChart: React.FC<CoverageChartProps> = ({
                   cursor: count > 0 ? "pointer" : "default",
                 }}
               >
-                <TypeBadge typeName={type} />
+                <TypeBadge typeName={type} lang={lang} />
                 <span
                   style={{
                     fontWeight: 700,
