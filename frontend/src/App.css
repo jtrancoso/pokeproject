@@ -152,14 +152,27 @@
   border-radius: 6px;
   border: 1px solid #e0e0e0;
   font-size: 13px;
-  flex-wrap: wrap;
+}
+
+.move-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @media (max-width: 768px) {
   .move-card {
+    flex-wrap: wrap;
     gap: 4px;
-    padding: 6px 8px;
+    padding: 8px;
     font-size: 12px;
+  }
+
+  .move-card-stats {
+    width: 100%;
+    gap: 6px;
+    padding-top: 2px;
+    font-size: 11px;
   }
 }
 
