@@ -83,6 +83,11 @@ const MoveCard: React.FC<MoveCardProps> = ({
           <span style={{ color: "#2980b9" }}>Acc: {move.accuracy}%</span>
         )}
         <span style={{ color: "#888" }}>PP: {move.pp}</span>
+        {move.learn_method === "level-up" && move.level_learned_at > 0 && (
+          <span style={{ color: "#e67e22", fontWeight: 600 }}>
+            Nv. {move.level_learned_at}
+          </span>
+        )}
         {onAdd && (
           <button
             onClick={onAdd}
